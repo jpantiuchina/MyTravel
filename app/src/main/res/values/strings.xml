@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">MyTravel</string>
-    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_maps">My Travel</string>
+    <string name="no_items">No items</string>
+    <string name="map_label">Show Map</string>
+    <string name="map_description">Show marker on the map</string>
 </resources>
