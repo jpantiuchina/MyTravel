@@ -17,18 +17,29 @@
 package com.example.jennya.mytravel;
 
 import android.*;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 /**
  * This shows how to create a simple activity with a map and a marker on the map.
@@ -53,14 +64,71 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
 
+    Button   mButton, mButtonGoogleMaps;
+    EditText mEdit;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
+
         SupportMapFragment mapFragment =
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        mButton = (Button)findViewById(R.id.estimateDistanceButton);
+        mButtonGoogleMaps = (Button)findViewById(R.id.estimateWithGoogleMaps);
+        mEdit   = (EditText)findViewById(R.id.editText);
+
+        //when "Estimate" button was clicked
+        mButton.setOnClickListener(
+            new View.OnClickListener()
+            {
+                public void onClick(View view)
+                {
+                    String destinationAddress = mEdit.getText().toString();
+                    Log.v("EditText", destinationAddress);
+//                    Intent searchAddress = new  Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q="+mEdit.getText().toString()));
+//                    startActivity(searchAddress);
+
+                    Geocoder coder = new Geocoder(MapsActivity.this);
+                    double longitude = 0;
+                    double latitude = 0;
+                    try {
+                        ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(destinationAddress, 50);
+                        for(Address add : adresses){
+                            if (!destinationAddress.isEmpty()) {//Controls to ensure it is right address such as country etc.
+                                longitude = add.getLongitude();
+                                latitude = add.getLatitude();
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)).title(destinationAddress));
+
+                }
+            });
+
+
+        // when "Estimate with Google maps" button was clicked
+        mButtonGoogleMaps.setOnClickListener(
+            new View.OnClickListener()
+            {
+                public void onClick(View view)
+                {
+                    String destinationAddress = mEdit.getText().toString();
+                    Log.v("EditText", destinationAddress);
+                    Intent searchAddress = new  Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q="+destinationAddress));
+                    startActivity(searchAddress);
+
+                }
+            });
+
+
     }
 
 
@@ -142,4 +210,16 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 //    {
 //        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
 //    }
+
+
+//    /**
+//     * Called when Estimate button is clicked.
+//     */
+//    public void onEstimateDist(View view) {
+//
+//        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
+//    }
+
+
+
 }
