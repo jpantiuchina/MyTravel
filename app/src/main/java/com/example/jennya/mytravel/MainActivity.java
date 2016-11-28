@@ -26,52 +26,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 
-import static android.content.Context.LAYOUT_INFLATER_SERVICE;
-
 
 public final class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener
 {
-
-
-    /**
-     * A custom array adapter that shows a {@link FeatureView} containing details about the demo.
-     */
-    private static class CustomArrayAdapter extends ArrayAdapter<MenuItem>
-    {
-
-        /**
-         * @param demos An array containing the details of the demos to be displayed.
-         */
-        public CustomArrayAdapter(Context context, MenuItem[] demos)
-        {
-            super(context, R.layout.feature, R.id.title, demos);
-        }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent)
-        {
-            FeatureView featureView;
-            if (convertView instanceof FeatureView)
-            {
-                featureView = (FeatureView) convertView;
-            } else
-            {
-                featureView = new FeatureView(getContext());
-            }
-
-            MenuItem demo = getItem(position);
-
-            featureView.setTitleId(demo.titleId);
-            featureView.setDescriptionId(demo.descriptionId);
-
-            Resources resources = getContext().getResources();
-            String title = resources.getString(demo.titleId);
-            String description = resources.getString(demo.descriptionId);
-            featureView.setContentDescription(title + ". " + description);
-
-            return featureView;
-        }
-    }
+    private static final MenuItem[] MAIN_MENU_ITEMS = {
+        new MenuItem(R.string.map_label, R.string.map_description, MapsActivity.class)
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -80,11 +40,8 @@ public final class MainActivity extends AppCompatActivity implements AdapterView
         setContentView(R.layout.main);
         ListView list = (ListView) findViewById(R.id.list);
 
-        ListAdapter adapter = new CustomArrayAdapter(this, MenuItem.MAIN_MENU_ITEMS);
-
-        list.setAdapter(adapter);
+        list.setAdapter(new CustomArrayAdapter(this, MAIN_MENU_ITEMS));
         list.setOnItemClickListener(this);
-        list.setEmptyView(findViewById(R.id.empty));
     }
 
 
@@ -113,7 +70,7 @@ final class FeatureView extends FrameLayout
         super(context);
 
         LayoutInflater layoutInflater =
-            (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+            (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         layoutInflater.inflate(R.layout.feature, this);
     }
 
@@ -146,9 +103,6 @@ final class FeatureView extends FrameLayout
  */
 class MenuItem
 {
-    public static final MenuItem[] MAIN_MENU_ITEMS = {
-        new MenuItem(R.string.map_label, R.string.map_description, MapsActivity.class)
-    };
 
     /**
      * The resource id of the title of the demo.
@@ -165,11 +119,54 @@ class MenuItem
      */
     public final Class<? extends AppCompatActivity> activityClass;
 
+    private int i = 5;
 
-    private MenuItem(int titleId, int descriptionId, Class<? extends AppCompatActivity> activityClass)
+    MenuItem(int titleId, int descriptionId, Class<? extends AppCompatActivity> activityClass)
     {
         this.titleId = titleId;
         this.descriptionId = descriptionId;
         this.activityClass = activityClass;
+    }
+}
+
+
+
+/**
+ * A custom array adapter that shows a {@link FeatureView} containing details about the demo.
+ */
+class CustomArrayAdapter extends ArrayAdapter<MenuItem>
+{
+
+    /**
+     * @param demos An array containing the details of the demos to be displayed.
+     */
+    public CustomArrayAdapter(Context context, MenuItem[] demos)
+    {
+        super(context, R.layout.feature, R.id.title, demos);
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent)
+    {
+        FeatureView featureView;
+        if (convertView instanceof FeatureView)
+        {
+            featureView = (FeatureView) convertView;
+        } else
+        {
+            featureView = new FeatureView(getContext());
+        }
+
+        MenuItem demo = getItem(position);
+
+        featureView.setTitleId(demo.titleId);
+        featureView.setDescriptionId(demo.descriptionId);
+
+        Resources resources = getContext().getResources();
+        String title = resources.getString(demo.titleId);
+        String description = resources.getString(demo.descriptionId);
+        featureView.setContentDescription(title + ". " + description);
+
+        return featureView;
     }
 }
