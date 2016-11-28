@@ -21,42 +21,45 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.widget.*;
+
+import static android.content.Context.LAYOUT_INFLATER_SERVICE;
 
 
-public final class MainActivity extends AppCompatActivity
-        implements AdapterView.OnItemClickListener {
+public final class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener
+{
 
 
     /**
      * A custom array adapter that shows a {@link FeatureView} containing details about the demo.
      */
-    private static class CustomArrayAdapter extends ArrayAdapter<DemoDetails> {
+    private static class CustomArrayAdapter extends ArrayAdapter<MenuItem>
+    {
 
         /**
          * @param demos An array containing the details of the demos to be displayed.
          */
-        public CustomArrayAdapter(Context context, DemoDetails[] demos) {
+        public CustomArrayAdapter(Context context, MenuItem[] demos)
+        {
             super(context, R.layout.feature, R.id.title, demos);
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
             FeatureView featureView;
-            if (convertView instanceof FeatureView) {
+            if (convertView instanceof FeatureView)
+            {
                 featureView = (FeatureView) convertView;
-            } else {
+            } else
+            {
                 featureView = new FeatureView(getContext());
             }
 
-            DemoDetails demo = getItem(position);
+            MenuItem demo = getItem(position);
 
             featureView.setTitleId(demo.titleId);
             featureView.setDescriptionId(demo.descriptionId);
@@ -71,12 +74,13 @@ public final class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main);
         ListView list = (ListView) findViewById(R.id.list);
 
-        ListAdapter adapter = new CustomArrayAdapter(this, DemoDetailsList.DEMOS);
+        ListAdapter adapter = new CustomArrayAdapter(this, MenuItem.MAIN_MENU_ITEMS);
 
         list.setAdapter(adapter);
         list.setOnItemClickListener(this);
@@ -84,10 +88,88 @@ public final class MainActivity extends AppCompatActivity
     }
 
 
-
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-        DemoDetails demo = (DemoDetails) parent.getAdapter().getItem(position);
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id)
+    {
+        MenuItem demo = (MenuItem) parent.getAdapter().getItem(position);
         startActivity(new Intent(this, demo.activityClass));
+    }
+
+
+}
+
+
+/**
+ * A widget that describes an activity that demonstrates a feature.
+ */
+final class FeatureView extends FrameLayout
+{
+
+    /**
+     * Constructs a feature view by inflating layout/feature.xml.
+     */
+    public FeatureView(Context context)
+    {
+        super(context);
+
+        LayoutInflater layoutInflater =
+            (LayoutInflater) context.getSystemService(LAYOUT_INFLATER_SERVICE);
+        layoutInflater.inflate(R.layout.feature, this);
+    }
+
+    /**
+     * Set the resource id of the title of the demo.
+     *
+     * @param titleId the resource id of the title of the demo
+     */
+    public synchronized void setTitleId(int titleId)
+    {
+        ((TextView) (findViewById(R.id.title))).setText(titleId);
+    }
+
+    /**
+     * Set the resource id of the description of the demo.
+     *
+     * @param descriptionId the resource id of the description of the demo
+     */
+    public synchronized void setDescriptionId(int descriptionId)
+    {
+        ((TextView) (findViewById(R.id.description))).setText(descriptionId);
+    }
+
+}
+
+
+
+/**
+ * A simple POJO that holds the details about the demo that are used by the List Adapter.
+ */
+class MenuItem
+{
+    public static final MenuItem[] MAIN_MENU_ITEMS = {
+        new MenuItem(R.string.map_label, R.string.map_description, MapsActivity.class)
+    };
+
+    /**
+     * The resource id of the title of the demo.
+     */
+    public final int titleId;
+
+    /**
+     * The resources id of the description of the demo.
+     */
+    public final int descriptionId;
+
+    /**
+     * The demo activity's class.
+     */
+    public final Class<? extends AppCompatActivity> activityClass;
+
+
+    private MenuItem(int titleId, int descriptionId, Class<? extends AppCompatActivity> activityClass)
+    {
+        this.titleId = titleId;
+        this.descriptionId = descriptionId;
+        this.activityClass = activityClass;
     }
 }
