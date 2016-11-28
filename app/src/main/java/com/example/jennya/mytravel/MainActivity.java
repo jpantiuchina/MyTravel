@@ -101,7 +101,7 @@ final class FeatureView extends FrameLayout
 /**
  * A simple POJO that holds the details about the demo that are used by the List Adapter.
  */
-class MenuItem
+final class MenuItem
 {
 
     /**
@@ -134,7 +134,7 @@ class MenuItem
 /**
  * A custom array adapter that shows a {@link FeatureView} containing details about the demo.
  */
-class CustomArrayAdapter extends ArrayAdapter<MenuItem>
+final class CustomArrayAdapter extends ArrayAdapter<MenuItem>
 {
 
     /**

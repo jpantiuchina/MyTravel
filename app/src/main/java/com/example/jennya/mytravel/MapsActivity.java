@@ -16,7 +16,6 @@
 
 package com.example.jennya.mytravel;
 
-import android.*;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -45,8 +44,8 @@ import java.util.ArrayList;
  * This shows how to create a simple activity with a map and a marker on the map.
  */
 public class MapsActivity extends AppCompatActivity implements OnMapReadyCallback,
-                                        GoogleMap.OnMyLocationButtonClickListener,
-    ActivityCompat.OnRequestPermissionsResultCallback
+    GoogleMap.OnMyLocationButtonClickListener//,
+//    ActivityCompat.OnRequestPermissionsResultCallback
 {
 
     /**
@@ -64,12 +63,13 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     private GoogleMap mMap;
 
-    Button   mButton, mButtonGoogleMaps;
-    EditText mEdit;
+    private Button mButton, mButtonGoogleMaps;
+    private EditText mEdit;
 
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
 
@@ -78,9 +78,9 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
             (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        mButton = (Button)findViewById(R.id.estimateDistanceButton);
-        mButtonGoogleMaps = (Button)findViewById(R.id.estimateWithGoogleMaps);
-        mEdit   = (EditText)findViewById(R.id.editText);
+        mButton = (Button) findViewById(R.id.estimateDistanceButton);
+        mButtonGoogleMaps = (Button) findViewById(R.id.estimateWithGoogleMaps);
+        mEdit = (EditText) findViewById(R.id.editText);
 
         //when "Estimate" button was clicked
         mButton.setOnClickListener(
@@ -96,19 +96,24 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                     Geocoder coder = new Geocoder(MapsActivity.this);
                     double longitude = 0;
                     double latitude = 0;
-                    try {
+                    try
+                    {
                         ArrayList<Address> adresses = (ArrayList<Address>) coder.getFromLocationName(destinationAddress, 50);
-                        for(Address add : adresses){
-                            if (!destinationAddress.isEmpty()) {//Controls to ensure it is right address such as country etc.
+                        for (Address add : adresses)
+                        {
+                            if (!destinationAddress.isEmpty())
+                            {//Controls to ensure it is right address such as country etc.
                                 longitude = add.getLongitude();
                                 latitude = add.getLatitude();
                             }
                         }
-                    } catch (IOException e) {
+                    }
+                    catch (IOException e)
+                    {
                         e.printStackTrace();
                     }
 
-                    mMap.addMarker(new MarkerOptions().position(new LatLng(latitude,longitude)).title(destinationAddress));
+                    mMap.addMarker(new MarkerOptions().position(new LatLng(latitude, longitude)).title(destinationAddress));
 
                 }
             });
@@ -122,7 +127,7 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
                 {
                     String destinationAddress = mEdit.getText().toString();
                     Log.v("EditText", destinationAddress);
-                    Intent searchAddress = new  Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q="+destinationAddress));
+                    Intent searchAddress = new Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=" + destinationAddress));
                     startActivity(searchAddress);
 
                 }
@@ -132,24 +137,27 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     }
 
 
-
     /**
      * Enables the My Location layer if the fine location permission has been granted.
      */
-    private void enableMyLocation() {
+    private void enableMyLocation()
+    {
         if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
-            != PackageManager.PERMISSION_GRANTED) {
+            != PackageManager.PERMISSION_GRANTED)
+        {
             // Permission to access the location is missing.
             PermissionUtils.requestPermission(this, LOCATION_PERMISSION_REQUEST_CODE,
                 android.Manifest.permission.ACCESS_FINE_LOCATION, true);
-        } else if (mMap != null) {
+        } else if (mMap != null)
+        {
             // Access to the location has been granted to the app.
             mMap.setMyLocationEnabled(true);
         }
     }
 
     @Override
-    public boolean onMyLocationButtonClick() {
+    public boolean onMyLocationButtonClick()
+    {
         Toast.makeText(this, "MyLocation button clicked", Toast.LENGTH_SHORT).show();
         // Return false so that we don't consume the event and the default behavior still occurs
         // (the camera animates to the user's current position).
@@ -159,25 +167,31 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE) {
+                                           @NonNull int[] grantResults)
+    {
+        if (requestCode != LOCATION_PERMISSION_REQUEST_CODE)
+        {
             return;
         }
 
         if (PermissionUtils.isPermissionGranted(permissions, grantResults,
-            android.Manifest.permission.ACCESS_FINE_LOCATION)) {
+            android.Manifest.permission.ACCESS_FINE_LOCATION))
+        {
             // Enable the my location layer if the permission has been granted.
             enableMyLocation();
-        } else {
+        } else
+        {
             // Display the missing permission error dialog when the fragments resume.
             mPermissionDenied = true;
         }
     }
 
     @Override
-    protected void onResumeFragments() {
+    protected void onResumeFragments()
+    {
         super.onResumeFragments();
-        if (mPermissionDenied) {
+        if (mPermissionDenied)
+        {
             // Permission was not granted, display error dialog.
             showMissingPermissionError();
             mPermissionDenied = false;
@@ -187,39 +201,21 @@ public class MapsActivity extends AppCompatActivity implements OnMapReadyCallbac
     /**
      * Displays a dialog with error message explaining that the location permission is missing.
      */
-    private void showMissingPermissionError() {
+    private void showMissingPermissionError()
+    {
         PermissionUtils.PermissionDeniedDialog
             .newInstance(true).show(getSupportFragmentManager(), "dialog");
     }
 
 
     @Override
-    public void onMapReady(GoogleMap map) {
+    public void onMapReady(GoogleMap map)
+    {
         mMap = map;
 
         mMap.setOnMyLocationButtonClickListener(this);
         enableMyLocation();
     }
-
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Africa.
-     */
-//    @Override
-//    public void onMapReady(GoogleMap map)
-//    {
-//        map.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-//    }
-
-
-//    /**
-//     * Called when Estimate button is clicked.
-//     */
-//    public void onEstimateDist(View view) {
-//
-//        mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
-//    }
-
 
 
 }
