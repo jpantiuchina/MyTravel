@@ -30,7 +30,8 @@ import android.widget.*;
 public final class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener
 {
     private static final MenuItem[] MAIN_MENU_ITEMS = {
-        new MenuItem(R.string.map_label, R.string.map_description, MapsActivity.class)
+        new MenuItem(R.string.map_label,     R.string.map_description,     MapsActivity.class),
+        new MenuItem(R.string.friends_label, R.string.friends_description, FriendsActivity.class),
     };
 
     @Override
