@@ -41,7 +41,7 @@ import java.util.List;
 
 public class FriendsActivity extends AppCompatActivity implements OnMapReadyCallback,
                                                                   LocationListener,
-                                                                  Callback<List<Friend>>
+                                                                  Callback<List<Friend>>, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener
 {
     private final static String TAG = FriendsActivity.class.getCanonicalName();
 
@@ -49,6 +49,12 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
     private FriendsService friendsService;
     private String group = "my-group";
     private String name = "Jenya";
+
+
+    /**
+     * Keeps track of the selected marker.
+     */
+    private Marker selectedMarker;
 
 
     @Override
@@ -82,6 +88,12 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
 
         // noinspection MissingPermission
         map.setMyLocationEnabled(true);
+
+        // Set listener for marker click event.  See the bottom of this class for its behavior.
+        map.setOnMarkerClickListener(this);
+
+        // Set listener for map click event.  See the bottom of this class for its behavior.
+        map.setOnMapClickListener(this);
     }
 
 
@@ -142,6 +154,43 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
         Log.e(TAG, "Error contacting friends web service", t);
 
     }
+
+    @Override
+    public boolean onMarkerClick(Marker marker)
+    {
+        // The user has re-tapped on the marker which was already showing an info window.
+        if (marker.equals(selectedMarker)) {
+            // The showing info window has already been closed - that's the first thing to happen
+            // when any marker is clicked.
+            // Return true to indicate we have consumed the event and that we do not want the
+            // the default behavior to occur (which is for the camera to move such that the
+            // marker is centered and for the marker's info window to open, if it has one).
+            selectedMarker = null;
+            return true;
+        }
+
+        selectedMarker = marker;
+
+        // Return false to indicate that we have not consumed the event and that we wish
+        // for the default behavior to occur.
+        return false;
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng)
+    {
+        // Any showing info window closes when the map is clicked.
+        // Clear the currently selected marker.
+        selectedMarker = null;
+    }
+
+
+    //----------------
+
+
+    //--------------------
+
+
 
 }
 
