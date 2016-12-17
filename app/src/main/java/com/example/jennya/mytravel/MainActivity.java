@@ -32,6 +32,7 @@ public final class MainActivity extends AppCompatActivity implements AdapterView
     private static final MenuItem[] MAIN_MENU_ITEMS = {
         new MenuItem(R.string.map_label,     R.string.map_description,     MapsActivity.class),
         new MenuItem(R.string.friends_label, R.string.friends_description, FriendsActivity.class),
+        new MenuItem(R.string.ar_label,      R.string.ar_description,      ARActivity.class),
     };
 
     @Override
@@ -119,8 +120,6 @@ final class MenuItem
      * The demo activity's class.
      */
     public final Class<? extends AppCompatActivity> activityClass;
-
-    private int i = 5;
 
     MenuItem(int titleId, int descriptionId, Class<? extends AppCompatActivity> activityClass)
     {

@@ -6,6 +6,8 @@
     <string name="map_description">Show marker on the map</string>
     <string name="friends_label">Show My Friends</string>
     <string name="friends_description">Show the locations of my friends on the map</string>
+    <string name="ar_label">Augmented Reality</string>
+    <string name="ar_description">Show the street view with arrows to the location</string>
 
     <!--    Permissions    -->
     <string name="permission_rationale_location">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>
