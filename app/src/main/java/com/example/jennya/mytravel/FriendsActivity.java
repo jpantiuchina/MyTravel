@@ -27,10 +27,7 @@ import android.util.Log;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.model.*;
 import org.json.JSONObject;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -47,7 +44,6 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -68,6 +64,7 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
      * Keeps track of the selected marker.
      */
     private Marker selectedMarker;
+    private Polyline currentPathToAFriend;
 
 
     @Override
@@ -170,7 +167,7 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
 
         for (Friend friend : friends)
         {
-            if (!name.equals(friend.name))
+            if (!name.equals(friend.name) && map != null) // there was a strange situation and map was null
             {
                 MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(friend.lat, friend.lng)).title(friend.name);
                 Marker marker = map.addMarker(markerOptions);
@@ -201,6 +198,9 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
             selectedMarker = null;
             return true;
         }
+
+        removeCurrentPathIfExists();
+
 
         selectedMarker = marker;
 
@@ -413,11 +413,11 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
 
                 // Adding all the points in the route to LineOptions
                 lineOptions.addAll(points);
-                lineOptions.width(2);
-                lineOptions.color(Color.RED);
+                lineOptions.width(11);
+                lineOptions.color(Color.argb(127, 255, 0, 0));
 
-                // Drawing polyline in the Google Map for the i-th route
-                map.addPolyline(lineOptions);
+                // Drawing path in the Google Map for the i-th route
+                currentPathToAFriend = map.addPolyline(lineOptions);
             }
 
 
@@ -431,6 +431,17 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
         // Any showing info window closes when the map is clicked.
         // Clear the currently selected marker.
         selectedMarker = null;
+        removeCurrentPathIfExists();
+    }
+
+
+    private void removeCurrentPathIfExists()
+    {
+        if (currentPathToAFriend != null)
+        {
+            currentPathToAFriend.remove();
+            currentPathToAFriend = null;
+        }
     }
 }
 
