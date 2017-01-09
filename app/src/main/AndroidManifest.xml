@@ -65,6 +65,7 @@
         <activity android:name=".MapsActivity"    android:label="@string/map_label"/>
         <activity android:name=".FriendsActivity" android:label="@string/friends_label"/>
         <activity android:name=".ARActivity" android:label="@string/ar_label"/>
+        <activity android:name="com.google.android.gms.samples.vision.ocrreader.OcrCaptureActivity" android:label="@string/ocr_label"/>
     </application>
 
 </manifest>

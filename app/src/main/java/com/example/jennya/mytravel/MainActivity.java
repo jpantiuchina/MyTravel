@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
+import com.google.android.gms.samples.vision.ocrreader.OcrCaptureActivity;
 
 
 public final class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener
@@ -33,6 +34,7 @@ public final class MainActivity extends AppCompatActivity implements AdapterView
         new MenuItem(R.string.map_label,     R.string.map_description,     MapsActivity.class),
         new MenuItem(R.string.friends_label, R.string.friends_description, FriendsActivity.class),
         new MenuItem(R.string.ar_label,      R.string.ar_description,      ARActivity.class),
+        new MenuItem(R.string.ocr_label, R.string.ocr_desciption, OcrCaptureActivity.class),
     };
 
     @Override
