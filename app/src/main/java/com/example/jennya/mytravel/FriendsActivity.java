@@ -182,6 +182,7 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
     public void onFailure(Call<List<Friend>> call, Throwable t)
     {
         Log.e(TAG, "Error contacting friends web service", t);
+        Log.e(TAG, "Error contacting friends web service", t);
 
     }
 
