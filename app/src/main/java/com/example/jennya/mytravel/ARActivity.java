@@ -49,7 +49,7 @@ public class ARActivity extends AppCompatActivity
         GeoObject go1 = new GeoObject(1);
         go1.setGeoPosition(41.26523339794433d, 1.926036406654116d);
         go1.setImageResource(R.drawable.creature_7);
-        go1.setName("Creature 1");
+        go1.setName("Creature 2");
         mWorld.addBeyondarObject(go1);
 
         // Finally we add the Wold data in to the fragment

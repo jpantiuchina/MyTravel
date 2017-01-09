@@ -276,7 +276,7 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
 
             BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
 
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             Log.e(TAG, "read");
 
