@@ -19,6 +19,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import com.example.jennya.mytravel.Translator;
+import com.example.jennya.mytravel.TranslatorCache;
 import com.google.android.gms.samples.vision.ocrreader.ui.camera.GraphicOverlay;
 import com.google.android.gms.vision.text.Text;
 import com.google.android.gms.vision.text.TextBlock;
@@ -30,6 +32,8 @@ import java.util.List;
  * overlay view.
  */
 public class OcrGraphic extends GraphicOverlay.Graphic {
+
+    private static final Translator translator = new TranslatorCache("en");
 
     private int mId;
 
@@ -113,7 +117,12 @@ public class OcrGraphic extends GraphicOverlay.Graphic {
         for(Text currentText : textComponents) {
             float left = translateX(currentText.getBoundingBox().left);
             float bottom = translateY(currentText.getBoundingBox().bottom);
-            canvas.drawText(currentText.getValue(), left, bottom, sTextPaint);
+
+            String text = currentText.getValue();
+
+            text = translator.translate(text);
+
+            canvas.drawText(text, left, bottom, sTextPaint);
         }
     }
 }
