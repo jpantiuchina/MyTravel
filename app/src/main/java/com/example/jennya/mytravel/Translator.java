@@ -43,12 +43,14 @@ public class Translator
         {
             translateResponse = translateCall.execute();
         }
+        //server did not respond
         catch (IOException e)
         {
             Log.e(TAG, "Cannot call Yandex Translate Service", e);
             return text;
         }
 
+        //server responded with error msg
         if (!translateResponse.isSuccessful())
         {
             Log.e(TAG, "Call to Yandex Translate Service was unsuccessful");
