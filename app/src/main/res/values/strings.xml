@@ -9,7 +9,9 @@
     <string name="ar_label">Augmented Reality</string>
     <string name="ar_description">Show the street view with arrows to the location</string>
     <string name="ocr_label">Live Translator</string>
-    <string name="ocr_desciption">Translates the text via camera</string>
+    <string name="ocr_description">Translates the text via camera</string>
+    <string name="friend_list_label">Friend List</string>
+    <string name="friend_list_description">Choose which of your contacts can see you</string>
 
     <!--    Permissions    -->
     <string name="permission_rationale_location">Access to the location service is required to demonstrate the \'my location\' feature, which shows your current location on the map.</string>

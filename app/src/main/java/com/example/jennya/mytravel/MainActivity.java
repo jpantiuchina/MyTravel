@@ -34,7 +34,8 @@ public final class MainActivity extends AppCompatActivity implements AdapterView
         new MenuItem(R.string.map_label,     R.string.map_description,     MapsActivity.class),
         new MenuItem(R.string.friends_label, R.string.friends_description, FriendsActivity.class),
         new MenuItem(R.string.ar_label,      R.string.ar_description,      ARActivity.class),
-        new MenuItem(R.string.ocr_label, R.string.ocr_desciption, OcrCaptureActivity.class),
+        new MenuItem(R.string.ocr_label, R.string.ocr_description, OcrCaptureActivity.class),
+        new MenuItem(R.string.friend_list_label, R.string.friend_list_description, FriendListActivity.class),
     };
 
     @Override
