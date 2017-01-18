@@ -16,6 +16,7 @@
 
 package com.example.jennya.mytravel;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -122,9 +123,9 @@ final class MenuItem
     /**
      * The demo activity's class.
      */
-    public final Class<? extends AppCompatActivity> activityClass;
+    public final Class<? extends Activity> activityClass;
 
-    MenuItem(int titleId, int descriptionId, Class<? extends AppCompatActivity> activityClass)
+    MenuItem(int titleId, int descriptionId, Class<? extends Activity> activityClass)
     {
         this.titleId = titleId;
         this.descriptionId = descriptionId;
