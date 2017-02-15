@@ -34,7 +34,9 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 import java.io.BufferedReader;
@@ -43,28 +45,25 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
-public class FriendsActivity extends AppCompatActivity implements OnMapReadyCallback,
-    LocationListener,
-    Callback<List<Friend>>, GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener
+public class FriendsActivity extends AppCompatActivity
 {
     private final static String TAG = FriendsActivity.class.getCanonicalName();
 
+//    private final static String FRIEND_SERVER = "http://www2.i-erdve.lt:34712";
+    private final static String FRIEND_SERVER = "http://192.168.45.102:34712";
+
+
     private GoogleMap map;
     private FriendsService friendsService;
-    private String group = "my-group";
-    private String name = "Jenya";
     private LatLng origin;
 
-
-    /**
-     * Keeps track of the selected marker.
-     */
+    // Keep track of the selected marker.
     private Marker selectedMarker;
     private Polyline currentPathToAFriend;
+    private Contacts contacts;
+    private final List<Marker> markers = new ArrayList<>();
 
 
     @Override
@@ -73,156 +72,174 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends);
 
+        contacts = new Contacts(this);
 
+        setupMap(); // This calls setupLocationListening when maps is ready
+
+        setupFriendService();
+    }
+
+
+    private void setupMap()
+    {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-        mapFragment.getMapAsync(this);
+        mapFragment.getMapAsync(new OnMapReadyCallback()
+        {
+            @Override
+            public void onMapReady(GoogleMap googleMap)
+            {
+                map = googleMap;
+
+                map.setMyLocationEnabled(true);
+
+                map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener()
+                {
+                    @Override
+                    public boolean onMarkerClick(Marker marker)
+                    {
+                        // The user has re-tapped on the marker which was already showing an info window.
+                        if (marker.equals(selectedMarker))
+                        {
+                            // The showing info window has already been closed - that's the first thing to happen
+                            // when any marker is clicked.
+                            // Return true to indicate we have consumed the event and that we do not want the
+                            // the default behavior to occur (which is for the camera to move such that the
+                            // marker is centered and for the marker's info window to open, if it has one).
+                            selectedMarker = null;
+                            return true;
+                        }
+
+                        removeCurrentPathIfExists();
+
+
+                        selectedMarker = marker;
+
+
+                        LatLng destination = marker.getPosition();
+
+                        // Getting URL to the Google Directions API
+                        String url = getDirectionsUrl(origin, destination);
+
+                        DownloadTask downloadTask = new DownloadTask();
+
+                    // Start downloading json data from Google Directions API
+                        downloadTask.execute(url);
+
+
+                        Log.e(TAG, "onMarkerClick: dddd");
+
+                        // Return false to indicate that we have not consumed the event and that we wish
+                        // for the default behavior to occur.
+                        return false;
+                    }
+                });
+
+                map.setOnMapClickListener(new GoogleMap.OnMapClickListener()
+                {
+                    @Override
+                    public void onMapClick(LatLng latLng)
+                    {
+                        // Any showing info window closes when the map is clicked.
+                        // Clear the currently selected marker.
+                        selectedMarker = null;
+                        removeCurrentPathIfExists();
+
+                    }
+                });
+
+                setupLocationListening();
+            }
+        });
+    }
+
+
+    private void setupLocationListening()
+    {
 
         LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        // noinspection MissingPermission
-        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, this);
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 1, new LocationListener()
+        {
+            @Override
+            public void onLocationChanged(Location location)
+            {
+                Log.e(TAG, "Got location " + location.toString());
+
+                friendsService.getMyFriends(contacts.getMyPhoneNumber(), location.getLatitude(), location.getLongitude()).enqueue(new Callback<List<Friend>>()
+                {
+                    @Override
+                    public void onResponse(Call<List<Friend>> call, Response<List<Friend>> response)
+                    {
+                        List<Friend> friends = response.body();
+                        Log.e(TAG, friends.toString());
+
+                        for (Marker marker : markers)
+                        {
+                            marker.remove();
+                        }
+
+                        for (Friend friend : friends)
+                        {
+                            if (!friend.phoneNumber.equals(contacts.getMyPhoneNumber()))
+                            {
+                                MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(friend.lat, friend.lng)).title(contacts.getNameByPhoneNumber(friend.phoneNumber));
+                                Marker marker = map.addMarker(markerOptions);
+                                markers.add(marker);
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<List<Friend>> call, Throwable t)
+                    {
+                        Log.e(TAG, "Error contacting friends web service", t);
+                    }
+                });
+
+                origin = new LatLng(location.getLatitude(), location.getLongitude());
+            }
+
+            @Override
+            public void onStatusChanged(String provider, int status, Bundle extras) { }
+
+            @Override
+            public void onProviderEnabled(String provider) { }
+
+            @Override
+            public void onProviderDisabled(String provider) { }
+        });
+    }
 
 
-        Retrofit retrofit = new Retrofit.Builder()
-            .baseUrl("http://www2.i-erdve.lt:34712")
+    private void setupFriendService()
+    {
+        friendsService = new Retrofit.Builder()
+            .baseUrl(FRIEND_SERVER)
             .addConverterFactory(GsonConverterFactory.create())
-            .build();
+            .build()
+            .create(FriendsService.class);
 
-        friendsService = retrofit.create(FriendsService.class);
+        friendsService.registerMe(contacts.getMyPhoneNumber(), contacts.getAllPhoneNumbers()).enqueue(new Callback<String>()
+        {
+            @Override
+            public void onResponse(Call<String> call, Response<String> response)
+            {
+                Log.i(TAG, "Registered friends");
+            }
+
+            @Override
+            public void onFailure(Call<String> call, Throwable t)
+            {
+                Log.e(TAG, "Friend registration failed", t);
+            }
+        });
     }
-
-
-    @Override
-    public void onMapReady(GoogleMap map)
-    {
-        this.map = map;
-
-        // noinspection MissingPermission
-        map.setMyLocationEnabled(true);
-
-        // Set listener for marker click event.  See the bottom of this class for its behavior.
-        map.setOnMarkerClickListener(this);
-
-        // Set listener for map click event.  See the bottom of this class for its behavior.
-        map.setOnMapClickListener(this);
-    }
-
-
-    /******* LOCATION LISTENER *******/
-
-
-    @Override
-    public void onLocationChanged(Location location)
-    {
-        Log.e(TAG, "Got location " + location.toString());
-
-        friendsService.getMyFriends(group, name, location.getLatitude(), location.getLongitude()).enqueue(this);
-
-//        GPSTracker myCoordinates = new GPSTracker(this);
-//        Log.e("mycoordinate", myCoordinates.toString());
-
-        origin = new LatLng(location.getLatitude(), location.getLongitude());
-
-//        if (!myCoordinates.canGetLocation())
-//        {
-//            myCoordinates.showSettingsAlert();
-//        }
-//        else
-//        {
-//            myCoordinates.getLocation();
-//            origin = new LatLng(myCoordinates.getLatitude(), myCoordinates.getLongitude());
-//
-//            Log.e("myorigin", origin.toString());
-//
-//        }
-
-    }
-
-    @Override
-    public void onStatusChanged(String s, int i, Bundle bundle)
-    { /* not needed */ }
-
-    @Override
-    public void onProviderEnabled(String s)
-    { /* not needed */ }
-
-    @Override
-    public void onProviderDisabled(String s)
-    { /* not needed */ }
 
 
     /******* WEB SERVICE RESPONSE HANDLER  *******/
 
-    private final List<Marker> markers = new ArrayList<>();
-
-    @Override
-    public void onResponse(Call<List<Friend>> call, Response<List<Friend>> response)
-    {
-        List<Friend> friends = response.body();
-        Log.e(TAG, friends.toString());
-
-        for (Marker marker : markers)
-        {
-            marker.remove();
-        }
-
-        for (Friend friend : friends)
-        {
-            if (!name.equals(friend.name) && map != null) // there was a strange situation and map was null
-            {
-                MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(friend.lat, friend.lng)).title(friend.name);
-                Marker marker = map.addMarker(markerOptions);
-                markers.add(marker);
-            }
-        }
 
 
-    }
-
-    @Override
-    public void onFailure(Call<List<Friend>> call, Throwable t)
-    {
-        Log.e(TAG, "Error contacting friends web service", t);
-        Log.e(TAG, "Error contacting friends web service", t);
-
-    }
-
-    @Override
-    public boolean onMarkerClick(Marker marker)
-    {
-//         The user has re-tapped on the marker which was already showing an info window.
-        if (marker.equals(selectedMarker)) {
-//         The showing info window has already been closed - that's the first thing to happen
-//         when any marker is clicked.
-//         Return true to indicate we have consumed the event and that we do not want the
-//         the default behavior to occur (which is for the camera to move such that the
-//         marker is centered and for the marker's info window to open, if it has one).
-            selectedMarker = null;
-            return true;
-        }
-
-        removeCurrentPathIfExists();
-
-
-        selectedMarker = marker;
-
-
-        LatLng destination = marker.getPosition();
-
-        // Getting URL to the Google Directions API
-        String url = getDirectionsUrl(origin, destination);
-
-        DownloadTask downloadTask = new DownloadTask();
-
-// Start downloading json data from Google Directions API
-        downloadTask.execute(url);
-
-
-        Log.e(TAG, "onMarkerClick: dddd");
-
-        // Return false to indicate that we have not consumed the event and that we wish
-        // for the default behavior to occur.
-        return false;
-    }
 
 
     private String getDirectionsUrl(LatLng origin, LatLng dest)
@@ -281,7 +298,7 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
             Log.e(TAG, "read");
 
 
-            String line = "";
+            String line;
             while ((line = br.readLine()) != null)
             {
                 Log.e(TAG, "read: " + line);
@@ -296,12 +313,18 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
         }
         catch (Exception e)
         {
-            Log.d("Excep downloading url", e.toString());
+            Log.e(TAG, "Exception downloading url", e);
         }
         finally
         {
-            iStream.close();
-            urlConnection.disconnect();
+            if (iStream != null)
+            {
+                iStream.close();
+            }
+            if (urlConnection != null)
+            {
+                urlConnection.disconnect();
+            }
         }
         return data;
     }
@@ -387,14 +410,14 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
         {
             Log.e(TAG, "par done" + result);
 
-            ArrayList<LatLng> points = null;
-            PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
+            ArrayList<LatLng> points;
+            PolylineOptions lineOptions;
+//            MarkerOptions markerOptions = new MarkerOptions();
 
             // Traversing through all the routes
             for (int i = 0; i < result.size(); i++)
             {
-                points = new ArrayList<LatLng>();
+                points = new ArrayList<>();
                 lineOptions = new PolylineOptions();
 
                 // Fetching i-th route
@@ -426,14 +449,6 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
     }
 
 
-    @Override
-    public void onMapClick(LatLng latLng)
-    {
-        // Any showing info window closes when the map is clicked.
-        // Clear the currently selected marker.
-        selectedMarker = null;
-        removeCurrentPathIfExists();
-    }
 
 
     private void removeCurrentPathIfExists()
@@ -444,34 +459,34 @@ public class FriendsActivity extends AppCompatActivity implements OnMapReadyCall
             currentPathToAFriend = null;
         }
     }
-}
 
 
-interface FriendsService
-{
-    @GET("get-my-friends")
-    Call<List<Friend>> getMyFriends(@Query("group") String group,
-                                    @Query("name") String name,
-                                    @Query("lat") double lat,
-                                    @Query("lng") double lng);
-}
-
-
-class Friend
-{
-    public String name;
-    public double lat;
-    public double lng;
-    public String lastUpdated;
-
-    @Override
-    public String toString()
+    interface FriendsService
     {
-        return "Friend{" +
-            "name='" + name + '\'' +
-            ", lat=" + lat +
-            ", lng=" + lng +
-            ", lastUpdated='" + lastUpdated + '\'' +
-            '}';
+        @GET("report-my-location-and-get-my-friend-locations")
+        Call<List<Friend>> getMyFriends(@Query("my-phone") String myPhone,
+                                        @Query("my-lat")   double lat,
+                                        @Query("my-lat")   double lng);
+
+        @POST("tell-my-friend-phone-numbers")
+        Call<String> registerMe(@Query("my-phone") String      myPhone,
+                                @Body              Set<String> myFriendPhoneNumbers);
+    }
+
+
+    private static class Friend
+    {
+        public String phoneNumber;
+        public double lat;
+        public double lng;
+        public String lastUpdated;
+
+        @Override
+        public String toString()
+        {
+            return "Friend" + phoneNumber + ": " + lat + ", " + lng + " - last updated on " + lastUpdated;
+        }
     }
 }
+
+
