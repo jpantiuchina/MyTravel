@@ -24,7 +24,10 @@ public final class Contacts
     {
         TelephonyManager telephonyManager = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
         String myPhoneNumber = telephonyManager.getLine1Number();
-        this.myPhoneNumber = myPhoneNumber != null ? myPhoneNumber : "+99999999";
+        if (myPhoneNumber == null || myPhoneNumber.isEmpty())
+            this.myPhoneNumber = "+99999999";
+        else
+            this.myPhoneNumber = myPhoneNumber;
 
         loadContacts(context);
     }
