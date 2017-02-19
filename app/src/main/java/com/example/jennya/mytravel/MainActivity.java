@@ -136,7 +136,7 @@ final class MenuItem
 
 
 /**
- * A custom array adapter that shows a {@link FeatureView} containing details about the demo.
+ * A custom array adapter that shows a {@link FeatureView} containing details about the menu.
  */
 final class CustomArrayAdapter extends ArrayAdapter<MenuItem>
 {

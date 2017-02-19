@@ -28,7 +28,7 @@
     <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estimate with Google Maps"
+            android:text="Show on Google Maps"
             android:id="@+id/estimateWithGoogleMaps"
             android:onClick="onEstimateWithGoogle"
             android:layout_below="@+id/estimateDistanceButton" android:layout_alignStart="@+id/estimateDistanceButton"/>
